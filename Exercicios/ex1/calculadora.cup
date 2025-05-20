@@ -1,0 +1,30 @@
+import java_cup.runtime.*;
+import java.io.FileReader;
+
+parser code {:
+  public static void main(String[] args) {
+    try {
+      Calc calc = new Calc(new FileReader(args[0]));
+      parser p = new parser(calc);
+      Object result = p.parse().value;
+      System.out.println("Resultado = " + result);
+    } catch (Exception e) {
+      System.err.println("Erro: " + e.getMessage());
+    }
+  }
+:};
+
+terminal PLUS, MINUS, TIMES, DIVIDE, LPAREN, RPAREN;
+terminal Integer NUMBER;
+
+non terminal Integer expr;
+
+precedence left PLUS, MINUS;
+precedence left TIMES, DIVIDE;
+
+expr ::= expr PLUS expr 
+     | expr MINUS expr 
+	 | expr TIMES expr 
+	 | expr DIVIDE expr 
+	 | LPAREN expr RPAREN
+	 | NUMBER;
