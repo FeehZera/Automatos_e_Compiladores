@@ -1,0 +1,74 @@
+// parser.cup
+package linguagem;
+
+import java_cup.runtime.*;
+
+parser code {:
+    public void report_error(String message, Object info) {
+        System.err.println("Erro: " + message);
+    }
+:};
+
+terminal 
+  IF, ELSE, WHILE, FOR, RETURN, VOID,
+  INT, FLOAT,
+  ID, INT_CONST, FLOAT_CONST,
+  EQ, NEQ, LE, GE, LT, GT,
+  ASSIGN, PLUS, MINUS, TIMES, DIV,
+  SEMI, COMMA, LPAREN, RPAREN, LBRACE, RBRACE, LBRACKET, RBRACKET;
+
+non terminal 
+  program, stmt_list, stmt, expr, term, factor, decl;
+
+precedence left PLUS, MINUS;
+precedence left TIMES, DIV;
+
+start with program;
+
+program ::= stmt_list;
+
+stmt_list ::= 
+      stmt stmt_list
+    | /* vazio */;
+
+stmt ::= 
+      decl
+    | expr SEMI
+    | IF LPAREN expr RPAREN stmt
+    | IF LPAREN expr RPAREN stmt ELSE stmt
+    | WHILE LPAREN expr RPAREN stmt
+    | FOR LPAREN expr SEMI expr SEMI expr RPAREN stmt
+    | LBRACE stmt_list RBRACE
+    ;
+
+decl ::= 
+      INT ID SEMI
+    | INT ID ASSIGN expr SEMI
+    | FLOAT ID SEMI
+    | FLOAT ID ASSIGN expr SEMI
+    ;
+
+expr ::= 
+      expr PLUS term
+    | expr MINUS term
+    | expr EQ term
+    | expr NEQ term
+    | expr LE term
+    | expr GE term
+    | expr LT term
+    | expr GT term
+    | term
+    ;
+
+term ::= 
+      term TIMES factor
+    | term DIV factor
+    | factor
+    ;
+
+factor ::= 
+      ID
+    | INT_CONST
+    | FLOAT_CONST
+    | LPAREN expr RPAREN
+    ;
