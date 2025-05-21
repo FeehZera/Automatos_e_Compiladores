@@ -1,0 +1,38 @@
+import java_cup.runtime.*;
+
+parser code {:
+  public static void main(String[] args) throws Exception 
+  {
+    QueryLexer queryLexer = new QueryLexer(new java.io.FileReader(args[0]));
+    parser p = new parser(queryLexer);
+    Object result = p.parse().value;
+    System.out.println("Resultado = " + result);
+  }
+:};
+
+terminal FROM, SELECT, WHERE, AND, COMMA,
+         EQ, GT, LT, GTEQ, LTEQ, NOTEQ, ALL;
+terminal String ID, STRING;
+terminal Integer NUMBER;
+
+non terminal query, table, fields, field_list, 
+             opt_where, conditions, condition, 
+             operator, value;
+
+query ::= FROM table SELECT fields opt_where {:RESULT = "Done"; :};
+
+table ::= ID;
+
+fields ::= ALL | field_list;
+
+field_list ::= ID | field_list COMMA ID;
+
+opt_where ::= WHERE conditions | /* EMPTY */;
+
+conditions ::= condition | condition AND condition;
+
+condition ::= value operator value;
+
+operator ::= EQ | GT | LT | GTEQ | LTEQ | NOTEQ;
+
+value ::= ID | NUMBER | STRING;
