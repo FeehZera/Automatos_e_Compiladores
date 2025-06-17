@@ -1,0 +1,268 @@
+import java_cup.runtime.*;
+
+parser code {:
+    private Semantic semantic = new Semantic();
+    private String currentProfile = null;
+    private String currentAlias = null;
+
+    public Semantic getSemantic() {
+        return semantic;
+    }
+    
+    public void syntax_error(Symbol s) {
+        System.err.println("Erro de sintaxe na linha " + (s.left+1) + 
+                          ", coluna " + (s.right+1) + ": " + s.value);
+    }
+    
+    public void unrecovered_syntax_error(Symbol s) {
+        System.err.println("Erro de sintaxe irrecuperável na linha " + (s.left+1) + 
+                          ", coluna " + (s.right+1) + ": " + s.value);
+    }
+:}
+
+// ===== Terminal symbols =====
+terminal 
+R_FULLSCREEN_GAMMA, FPS_MAX, HUD_SCALING, HUD_SHOWTARGETID, CL_COLOR, CL_HUD_COLOR,
+CL_ALLOW_ANIMATED_AVATARS, CL_SHOWLOADOUT, CL_RADAR_SQUARE_WITH_SCOREBOARD,
+R_SHOW_BUILD_INFO, CL_HUD_RADAR_SCALE, CL_RADAR_SCALE, CL_RADAR_ALWAYS_CENTERED,
+CL_RADAR_ROTATE, VIEWMODEL_PRESETPOS, VIEWMODEL_FOV, VIEWMODEL_OFFSET_X,
+VIEWMODEL_OFFSET_Y, VIEWMODEL_OFFSET_Z, CL_CROSSHAIR_DRAWOUTLINE,
+CL_CROSSHAIR_OUTLINETHICKNESS, CL_CROSSHAIRSTYLE, CL_CROSSHAIRSIZE,
+CL_CROSSHAIRTHICKNESS, CL_CROSSHAIRGAP, CL_CROSSHAIRDOT, CL_CROSSHAIRALPHA,
+CL_CROSSHAIRCOLOR, CL_CROSSHAIRCOLOR_B, CL_CROSSHAIRCOLOR_G, CL_CROSSHAIRCOLOR_R,
+CL_CROSSHAIRGAP_USEWEAPONVALUE, CL_CROSSHAIR_SNIPER_WIDTH, CL_CROSSHAIR_RECOIL,
+SND_MIXAHEAD, SND_HEADPHONE_EQ, SND_SPATIALIZE_LERP,
+SND_STEAMAUDIO_ENABLE_PERSPECTIVE_CORRECTION, SND_MUTE_MVP_MUSIC_LIVE_PLAYERS,
+SND_MENUMUSIC_VOLUME, SND_ROUNDSTART_VOLUME, SND_ROUNDEND_VOLUME,
+SND_ROUNDACTION_VOLUME, SND_MVP_VOLUME, SND_DEATHCAMERA_VOLUME, SND_VOIPVOLUME,
+SND_TENSECONDWARNING_VOLUME, VOLUME, SENSITIVITY, ZOOM_SENSITIVITY_RATIO,
+CL_SNIPER_DELAY_UNSCOPE, CL_SNIPER_AUTO_REZOOM, CON_ENABLE,
+MM_DEDICATED_SEARCH_MAXPING, UI_STEAM_OVERLAY_NOTIFICATION_POSITION,
+ENGINE_LOW_LATENCY_SLEEP_AFTER_CLIENT_TICK, R_PLAYER_VISIBILITY_MODE,
+CL_USE_OPENS_BUY_MENU, CL_TEAMID_OVERHEAD_MODE, CL_TEAMID_OVERHEAD_COLORS_SHOW,
+CL_TEAMMATE_COLORS_SHOW, CL_DM_BUYRANDOMWEAPONS, CL_JOIN_ADVERTISE,
+CL_SCOREBOARD_MOUSE_ENABLE_BINDING, CL_SILENCER_MODE, SPEC_SHOW_XRAY,
+BATTERY_SAVER, JOYSTICK, BIND, ALIAS, HOST_WRITECONFIG, CLEAR, ECHO,
+PLUS_FORWARD, MINUS_FORWARD, PLUS_BACK, MINUS_BACK, PLUS_LEFT, MINUS_LEFT,
+PLUS_RIGHT, MINUS_RIGHT, PLUS_SPEED, MINUS_SPEED, PLUS_JUMP, MINUS_JUMP, 
+PLUS_DUCK, MINUS_DUCK, PLUS_ATTACK, MINUS_ATTACK, PLUS_ATTACK2, MINUS_ATTACK2,
+PLUS_RELOAD, MINUS_RELOAD, PLUS_USE, MINUS_USE, PLUS_SCORE, MINUS_SCORE,
+PLUS_VOICERECORD, MINUS_VOICERECORD, SLOT1, SLOT2, SLOT3, SLOT4, SLOT5,
+SLOT6, SLOT7, SLOT8, SLOT9, SLOT10, TOGGLECONSOLE, TOGGLE, ID, SKEY, 
+NUMBER, STRING, PROFILE, SEMICOLON, LBRACE, RBRACE, ERROR;
+
+//===== Non-terminal symbols =====
+non terminal program, profile, statement_list, statement, bind_statement, 
+         var_statement, echo_statement, config_statement, key, action_or_alias, 
+         value, alias_body, alias_statement_list, alias_statement, profile_list;
+
+//===== Start production =====
+start with program;
+
+program ::= profile_list
+          ;
+
+profile_list ::= profile_list profile
+               | profile
+               ;
+
+profile ::= PROFILE ID:name LBRACE 
+            {: 
+                currentProfile = (String)name;
+                semantic.startProfile(currentProfile); 
+            :} 
+            statement_list RBRACE
+            {:
+                currentProfile = null;
+            :}
+          ;
+
+statement_list ::= statement_list statement
+                 | /* empty */
+                 ;
+
+statement ::= config_statement
+            | bind_statement  
+            | var_statement
+            | echo_statement
+            | CLEAR SEMICOLON
+            | HOST_WRITECONFIG SEMICOLON
+            ;
+
+config_statement ::= R_FULLSCREEN_GAMMA value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "gama", (String)v); :}
+                   | FPS_MAX value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "fps_max", (String)v); :}
+                   | HUD_SCALING value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "escala_hud", (String)v); :}
+                   | HUD_SHOWTARGETID value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "id_inimigo", (String)v); :}
+                   | CL_COLOR value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "cor", (String)v); :}
+                   | CL_HUD_COLOR value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "cor_hud", (String)v); :}
+                   | CL_HUD_RADAR_SCALE value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "radar_escala", (String)v); :}
+                   | CL_RADAR_SCALE value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "radar_escala_interno", (String)v); :}
+                   | CL_RADAR_ALWAYS_CENTERED value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "radar_centralizado", (String)v); :}
+                   | CL_RADAR_ROTATE value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "rotar_radar", (String)v); :}
+                   | CL_CROSSHAIRSTYLE value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "estilo_mira", (String)v); :}
+                   | CL_CROSSHAIRSIZE value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "tamanho_mira", (String)v); :}
+                   | CL_CROSSHAIRTHICKNESS value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "espessura_mira", (String)v); :}
+                   | CL_CROSSHAIRGAP value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "espacamento_mira", (String)v); :}
+                   | CL_CROSSHAIRCOLOR value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "cor_mira", (String)v); :}
+                   | CL_CROSSHAIRALPHA value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "transparencia_mira", (String)v); :}
+                   | VOLUME value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "volume_geral", (String)v); :}
+                   | SND_MENUMUSIC_VOLUME value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "volume_menu", (String)v); :}
+                   | SND_MVP_VOLUME value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "volume_mvp", (String)v); :}
+                   | SND_VOIPVOLUME value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "volume_voip", (String)v); :}
+                   | SENSITIVITY value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "sensibilidade", (String)v); :}
+                   | ZOOM_SENSITIVITY_RATIO value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "sensibilidade_zoom", (String)v); :}
+                   | CON_ENABLE value:v SEMICOLON
+                    {: semantic.addConfig(currentProfile, "console", (String)v); :}
+                   ;
+
+bind_statement ::= BIND key:k action_or_alias:a SEMICOLON
+                  {: 
+                      if (currentAlias != null) {
+                          semantic.addAliasBind(currentProfile, currentAlias, (String)k, (String)a);
+                      } else {
+                          semantic.addBind(currentProfile, (String)k, (String)a);
+                      }
+                  :}
+                 ;
+
+var_statement ::= ALIAS ID:name LBRACE 
+                 {: 
+                     currentAlias = (String)name;
+                     semantic.startAlias(currentProfile, currentAlias);
+                 :}
+                 alias_body RBRACE
+                 {:
+                     currentAlias = null;
+                 :}
+                ;
+
+echo_statement ::= ECHO value:msg SEMICOLON
+                  {: semantic.addMessage(currentProfile, (String)msg); :}
+                 ;
+
+key ::= SKEY:k
+       {: RESULT = (String)k; :}
+      | ID:k
+       {: RESULT = (String)k; :}
+      | STRING:k
+       {: RESULT = (String)k; :}
+      ;
+
+action_or_alias ::= PLUS_FORWARD
+                   {: RESULT = "+frente"; :}
+                  | MINUS_FORWARD
+                   {: RESULT = "-frente"; :}
+                  | PLUS_BACK
+                   {: RESULT = "+tras"; :}
+                  | MINUS_BACK
+                   {: RESULT = "-tras"; :}
+                  | PLUS_LEFT
+                   {: RESULT = "+esquerda"; :}
+                  | MINUS_LEFT
+                   {: RESULT = "-esquerda"; :}
+                  | PLUS_RIGHT
+                   {: RESULT = "+direita"; :}
+                  | MINUS_RIGHT
+                   {: RESULT = "-direita"; :}
+                  | PLUS_JUMP
+                   {: RESULT = "+pular"; :}
+                  | MINUS_JUMP
+                   {: RESULT = "-pular"; :}
+                  | PLUS_DUCK
+                   {: RESULT = "+agachar"; :}
+                  | MINUS_DUCK
+                   {: RESULT = "-agachar"; :}
+                  | PLUS_ATTACK
+                   {: RESULT = "+atacar"; :}
+                  | MINUS_ATTACK
+                   {: RESULT = "-atacar"; :}
+                  | PLUS_ATTACK2
+                   {: RESULT = "+atacar2"; :}
+                  | MINUS_ATTACK2
+                   {: RESULT = "-atacar2"; :}
+                  | PLUS_USE
+                   {: RESULT = "+usar"; :}
+                  | MINUS_USE
+                   {: RESULT = "-usar"; :}
+                  | PLUS_RELOAD
+                   {: RESULT = "+recarregar"; :}
+                  | MINUS_RELOAD
+                   {: RESULT = "-recarregar"; :}
+                  | PLUS_VOICERECORD
+                   {: RESULT = "+mic"; :}
+                  | MINUS_VOICERECORD
+                   {: RESULT = "-mic"; :}
+                  | PLUS_SCORE
+                   {: RESULT = "+placar"; :}
+                  | MINUS_SCORE
+                   {: RESULT = "-placar"; :}
+                  | SLOT1
+                   {: RESULT = "slot1"; :}
+                  | SLOT2
+                   {: RESULT = "slot2"; :}
+                  | SLOT3
+                   {: RESULT = "slot3"; :}
+                  | SLOT4
+                   {: RESULT = "slot4"; :}
+                  | SLOT5
+                   {: RESULT = "slot5"; :}
+                  | SLOT6
+                   {: RESULT = "slot6"; :}
+                  | SLOT7
+                   {: RESULT = "slot7"; :}
+                  | SLOT8
+                   {: RESULT = "slot8"; :}
+                  | SLOT9
+                   {: RESULT = "slot9"; :}
+                  | SLOT10
+                   {: RESULT = "slot10"; :}
+                  | TOGGLECONSOLE
+                   {: RESULT = "toggleconsole"; :}
+                  | ID:id
+                   {: RESULT = (String)id; :}
+                  | STRING:str
+                   {: RESULT = (String)str; :}
+                  ;
+
+value ::= NUMBER:n
+         {: RESULT = (String)n; :}
+        | STRING:s
+         {: RESULT = (String)s; :}
+        | ID:id
+         {: RESULT = (String)id; :}
+        ;
+
+alias_body ::= alias_statement_list
+             ;
+
+alias_statement_list ::= alias_statement_list alias_statement
+                       | /* empty */
+                       ;
+
+alias_statement ::= bind_statement
+                  | config_statement
+                  | echo_statement
+                  | CLEAR SEMICOLON
+                  ;

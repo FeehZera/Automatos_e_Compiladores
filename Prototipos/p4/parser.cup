@@ -1,0 +1,106 @@
+import java_cup.runtime.*;
+
+parser code {:
+    import java.util.*;
+    import your.package.Semantic;  // ajuste o pacote se necessário
+
+    private Semantic semantic = new Semantic();
+
+    public Semantic getSemantic() {
+        return semantic;
+    }
+:}
+
+terminal CLEAR, PROFILE, TECLA, VAR;
+terminal LBRACE, RBRACE, QUOTE, EQUALS, SEMICOLON;
+terminal Double NUMBER;
+terminal String ID, KEY;
+
+non terminal start;
+non terminal config_list;
+non terminal config_entry;
+non terminal profile_list; 
+non terminal profile;
+non terminal var_list;
+non terminal var_entry; 
+non terminal bind_list;
+non terminal bind_entry; 
+non terminal command_list;
+non terminal command_entry;
+
+start ::= config_list:e {: 
+    
+:};
+
+config_list ::= config_entry:ce config_list:cl {:  
+    
+    RESULT = null;
+:}
+| /* vazio */ {: 
+    
+    RESULT = null; 
+:};
+
+config_entry ::= profile {: 
+    
+:}
+| CLEAR {: 
+
+:}
+;
+
+profile ::= PROFILE ID LBRACE
+               command_list:cmds
+               var_list:vars
+               bind_list:binds
+           RBRACE
+           {: 
+               Semantic.Profile p = new Semantic.Profile($2);
+               p.comandos.addAll(cmds);
+               p.vars.putAll(vars);
+               p.binds.putAll(binds);
+               semantic.addProfile(p);
+               RESULT = p; // Já estava correto.
+           :};
+
+command_list ::= command_entry:ce command_list:cl {: 
+    List<String> l = new ArrayList<>();
+    l.add(ce);
+    l.addAll(cl);
+    RESULT = l; // Já estava correto.
+:}
+| /* vazio */ {: RESULT = new ArrayList<>(); :} // Já estava correto.
+;
+
+command_entry ::= ID QUOTE ID QUOTE SEMICOLON {: 
+    RESULT = $1 + " \"" + $3 + "\""; // Já estava correto.
+:}
+| ID QUOTE NUMBER QUOTE SEMICOLON {: 
+    RESULT = $1 + " \"" + $3 + "\""; // Já estava correto.
+:}
+;
+
+var_list ::= VAR ID LBRACE
+                command_list:cmds
+            RBRACE
+          var_list:vl {: 
+              Map<String, Semantic.Var> map = new LinkedHashMap<>();
+              Semantic.Var v = new Semantic.Var($2);
+              for (String c : cmds) v.comandos.add(c);
+              map.put($2, v);
+              map.putAll(vl);
+              RESULT = map; // Já estava correto.
+          :}
+| /* vazio */ {: RESULT = new LinkedHashMap<>(); :} // Já estava correto.
+;
+
+bind_list ::= TECLA QUOTE KEY QUOTE ID QUOTE SEMICOLON
+              bind_list:bl
+            {: 
+                Map<String, String> map = new LinkedHashMap<>();
+                map.put($3.toUpperCase(), $5);
+                map.putAll(bl);
+                RESULT = map; // Já estava correto.
+            :}
+| /* vazio */ {: RESULT = new LinkedHashMap<>(); :} // Já estava correto.
+;

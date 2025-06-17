@@ -1,0 +1,21 @@
+perfil competitivo {
+    gama 2.7;
+    tecla space +jump;
+    tecla alt jumpthrow;
+    
+    var jumpthow {
+	tecla F2 +duck;
+    }
+}
+
+perfil treino {
+    gama 2.5;
+    tecla w frente;
+    tecla space jumpthrow;
+
+    var jumpthow {
+	sens_treino "3.0";
+    }
+
+    msg ola mundo;
+}

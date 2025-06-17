@@ -1,0 +1,49 @@
+import java_cup.runtime.*;
+
+parser code {:
+    public static void main(String[] args) throws Exception {
+        Lexer lexer = new Lexer(new java.io.InputStreamReader(System.in));
+        parser p = new parser(lexer);
+        p.parse();
+        System.out.println("Parsing concluído com sucesso!");
+    }
+:}
+
+
+
+// Tokens do lexer
+terminal MAIUSCULA, MINUSCULA, NUMERO, SIMBOLO, SENHA;
+terminal PLUS, SEMICOLON, ARROW;
+terminal Integer DIGIT;
+terminal String STRING_LITERAL;
+terminal String IDENTIFIER;
+
+// Não-terminais
+non terminal program;
+non terminal command;
+non terminal criteria;
+non terminal criteria_list;
+
+start with program;
+
+// Produções
+program ::= program command SEMICOLON
+          | command SEMICOLON
+          ;
+
+command ::= SENHA ARROW criteria
+          | SENHA ARROW STRING_LITERAL
+          ;
+
+criteria ::= criteria_list
+           ;
+
+criteria_list ::= MAIUSCULA
+                | MINUSCULA
+                | NUMERO
+                | SIMBOLO
+                | MAIUSCULA PLUS criteria_list
+                | MINUSCULA PLUS criteria_list
+                | NUMERO PLUS criteria_list
+                | SIMBOLO PLUS criteria_list
+                ;

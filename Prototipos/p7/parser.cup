@@ -1,0 +1,226 @@
+import java_cup.runtime.*;
+
+parser code {:
+    /*import java.util.*;
+    import your.package.Semantic;
+
+    private Semantic semantic = new Semantic();
+
+    public Semantic getSemantic() {
+        return semantic;
+    }*/
+:}
+
+// ===== Terminal symbols =====
+terminal 
+R_FULLSCREEN_GAMMA, FPS_MAX, HUD_SCALING, HUD_SHOWTARGETID, CL_COLOR, CL_HUD_COLOR,
+CL_ALLOW_ANIMATED_AVATARS, CL_SHOWLOADOUT, CL_RADAR_SQUARE_WITH_SCOREBOARD,
+R_SHOW_BUILD_INFO, CL_HUD_RADAR_SCALE, CL_RADAR_SCALE, CL_RADAR_ALWAYS_CENTERED,
+CL_RADAR_ROTATE, VIEWMODEL_PRESETPOS, VIEWMODEL_FOV, VIEWMODEL_OFFSET_X,
+VIEWMODEL_OFFSET_Y, VIEWMODEL_OFFSET_Z, CL_CROSSHAIR_DRAWOUTLINE,
+CL_CROSSHAIR_OUTLINETHICKNESS, CL_CROSSHAIRSTYLE, CL_CROSSHAIRSIZE,
+CL_CROSSHAIRTHICKNESS, CL_CROSSHAIRGAP, CL_CROSSHAIRDOT, CL_CROSSHAIRALPHA,
+CL_CROSSHAIRCOLOR, CL_CROSSHAIRCOLOR_B, CL_CROSSHAIRCOLOR_G, CL_CROSSHAIRCOLOR_R,
+CL_CROSSHAIRGAP_USEWEAPONVALUE, CL_CROSSHAIR_SNIPER_WIDTH, CL_CROSSHAIR_RECOIL,
+SND_MIXAHEAD, SND_HEADPHONE_EQ, SND_SPATIALIZE_LERP,
+SND_STEAMAUDIO_ENABLE_PERSPECTIVE_CORRECTION, SND_MUTE_MVP_MUSIC_LIVE_PLAYERS,
+SND_MENUMUSIC_VOLUME, SND_ROUNDSTART_VOLUME, SND_ROUNDEND_VOLUME,
+SND_ROUNDACTION_VOLUME, SND_MVP_VOLUME, SND_DEATHCAMERA_VOLUME, SND_VOIPVOLUME,
+SND_TENSECONDWARNING_VOLUME, VOLUME, SENSITIVITY, ZOOM_SENSITIVITY_RATIO,
+CL_SNIPER_DELAY_UNSCOPE, CL_SNIPER_AUTO_REZOOM, CON_ENABLE,
+MM_DEDICATED_SEARCH_MAXPING, UI_STEAM_OVERLAY_NOTIFICATION_POSITION,
+ENGINE_LOW_LATENCY_SLEEP_AFTER_CLIENT_TICK, R_PLAYER_VISIBILITY_MODE,
+CL_USE_OPENS_BUY_MENU, CL_TEAMID_OVERHEAD_MODE, CL_TEAMID_OVERHEAD_COLORS_SHOW,
+CL_TEAMMATE_COLORS_SHOW, CL_DM_BUYRANDOMWEAPONS, CL_JOIN_ADVERTISE,
+CL_SCOREBOARD_MOUSE_ENABLE_BINDING, CL_SILENCER_MODE, SPEC_SHOW_XRAY,
+BATTERY_SAVER, JOYSTICK, BIND, ALIAS, HOST_WRITECONFIG, CLEAR, ECHO,
+PLUS_FORWARD, MINUS_FORWARD, PLUS_BACK, MINUS_BACK, PLUS_LEFT, MINUS_LEFT,
+PLUS_RIGHT, MINUS_RIGHT, PLUS_SPEED, MINUS_SPEED, PLUS_JUMP, MINUS_JUMP, 
+PLUS_DUCK, MINUS_DUCK, PLUS_ATTACK, MINUS_ATTACK, PLUS_ATTACK2, MINUS_ATTACK2,
+PLUS_RELOAD, MINUS_RELOAD, PLUS_USE, MINUS_USE, PLUS_SCORE, MINUS_SCORE,
+PLUS_VOICERECORD, MINUS_VOICERECORD, SLOT1, SLOT2, SLOT3, SLOT4, SLOT5,
+SLOT6, SLOT7, SLOT8, SLOT9, SLOT10, TOGGLECONSOLE, TOGGLE, ID, SKEY, 
+NUMBER, STRING, PROFILE, SEMICOLON, LBRACE, RBRACE, ERROR;
+
+//===== Non-terminal symbols =====
+non terminal program, profile, statement_list, statement, bind_statement, 
+         var_statement, echo_statement, config_statement, key, action_or_alias, 
+         value, alias_body, alias_statement, alias_statement_list, command_sequence,
+         single_command;
+
+//===== Start production =====
+//start with program;
+
+program ::= profile
+          ;
+
+profile ::= PROFILE ID LBRACE statement_list RBRACE
+          ;
+
+statement_list ::= statement_list statement
+                 | statement
+                 |
+                 ;
+
+statement ::= config_statement
+            | bind_statement  
+            | var_statement
+            | echo_statement
+            | CLEAR SEMICOLON
+            | HOST_WRITECONFIG SEMICOLON
+            ;
+
+config_statement ::= R_FULLSCREEN_GAMMA value SEMICOLON
+                   | FPS_MAX value SEMICOLON
+                   | HUD_SCALING value SEMICOLON
+                   | HUD_SHOWTARGETID value SEMICOLON
+                   | CL_COLOR value SEMICOLON
+                   | CL_HUD_COLOR value SEMICOLON
+                   | CL_ALLOW_ANIMATED_AVATARS value SEMICOLON
+                   | CL_SHOWLOADOUT value SEMICOLON
+                   | CL_RADAR_SQUARE_WITH_SCOREBOARD value SEMICOLON
+                   | R_SHOW_BUILD_INFO value SEMICOLON
+                   | CL_HUD_RADAR_SCALE value SEMICOLON
+                   | CL_RADAR_SCALE value SEMICOLON
+                   | CL_RADAR_ALWAYS_CENTERED value SEMICOLON
+                   | CL_RADAR_ROTATE value SEMICOLON
+                   | VIEWMODEL_PRESETPOS value SEMICOLON
+                   | VIEWMODEL_FOV value SEMICOLON
+                   | VIEWMODEL_OFFSET_X value SEMICOLON
+                   | VIEWMODEL_OFFSET_Y value SEMICOLON
+                   | VIEWMODEL_OFFSET_Z value SEMICOLON
+                   | CL_CROSSHAIR_DRAWOUTLINE value SEMICOLON
+                   | CL_CROSSHAIR_OUTLINETHICKNESS value SEMICOLON
+                   | CL_CROSSHAIRSTYLE value SEMICOLON
+                   | CL_CROSSHAIRSIZE value SEMICOLON
+                   | CL_CROSSHAIRTHICKNESS value SEMICOLON
+                   | CL_CROSSHAIRGAP value SEMICOLON
+                   | CL_CROSSHAIRDOT value SEMICOLON
+                   | CL_CROSSHAIRALPHA value SEMICOLON
+                   | CL_CROSSHAIRCOLOR value SEMICOLON
+                   | CL_CROSSHAIRCOLOR_B value SEMICOLON
+                   | CL_CROSSHAIRCOLOR_G value SEMICOLON
+                   | CL_CROSSHAIRCOLOR_R value SEMICOLON
+                   | CL_CROSSHAIRGAP_USEWEAPONVALUE value SEMICOLON
+                   | CL_CROSSHAIR_SNIPER_WIDTH value SEMICOLON
+                   | CL_CROSSHAIR_RECOIL value SEMICOLON
+                   | SND_MIXAHEAD value SEMICOLON
+                   | SND_HEADPHONE_EQ value SEMICOLON
+                   | SND_SPATIALIZE_LERP value SEMICOLON
+                   | SND_STEAMAUDIO_ENABLE_PERSPECTIVE_CORRECTION value SEMICOLON
+                   | SND_MUTE_MVP_MUSIC_LIVE_PLAYERS value SEMICOLON
+                   | SND_MENUMUSIC_VOLUME value SEMICOLON
+                   | SND_ROUNDSTART_VOLUME value SEMICOLON
+                   | SND_ROUNDEND_VOLUME value SEMICOLON
+                   | SND_ROUNDACTION_VOLUME value SEMICOLON
+                   | SND_MVP_VOLUME value SEMICOLON
+                   | SND_DEATHCAMERA_VOLUME value SEMICOLON
+                   | SND_VOIPVOLUME value SEMICOLON
+                   | SND_TENSECONDWARNING_VOLUME value SEMICOLON
+                   | VOLUME value SEMICOLON
+                   | SENSITIVITY value SEMICOLON
+                   | ZOOM_SENSITIVITY_RATIO value SEMICOLON
+                   | CL_SNIPER_DELAY_UNSCOPE value SEMICOLON
+                   | CL_SNIPER_AUTO_REZOOM value SEMICOLON
+                   | CON_ENABLE value SEMICOLON
+                   | MM_DEDICATED_SEARCH_MAXPING value SEMICOLON
+                   | UI_STEAM_OVERLAY_NOTIFICATION_POSITION value SEMICOLON
+                   | ENGINE_LOW_LATENCY_SLEEP_AFTER_CLIENT_TICK value SEMICOLON
+                   | R_PLAYER_VISIBILITY_MODE value SEMICOLON
+                   | CL_USE_OPENS_BUY_MENU value SEMICOLON
+                   | CL_TEAMID_OVERHEAD_MODE value SEMICOLON
+                   | CL_TEAMID_OVERHEAD_COLORS_SHOW value SEMICOLON
+                   | CL_TEAMMATE_COLORS_SHOW value SEMICOLON
+                   | CL_DM_BUYRANDOMWEAPONS value SEMICOLON
+                   | CL_JOIN_ADVERTISE value SEMICOLON
+                   | CL_SCOREBOARD_MOUSE_ENABLE_BINDING value SEMICOLON
+                   | CL_SILENCER_MODE value SEMICOLON
+                   | SPEC_SHOW_XRAY value SEMICOLON
+                   | BATTERY_SAVER value SEMICOLON
+                   | JOYSTICK value SEMICOLON
+                   ;
+
+bind_statement ::= BIND key command_sequence SEMICOLON
+                 ;
+
+var_statement ::= ALIAS ID LBRACE alias_body RBRACE
+                ;
+
+echo_statement ::= ECHO value SEMICOLON
+                 ;
+
+key ::= SKEY
+      | ID
+      | STRING
+      ;
+
+// Suporte para comandos múltiplos separados por ponto e vírgula
+command_sequence ::= command_sequence ";" single_command
+                   | single_command
+                   ;
+
+single_command ::= action_or_alias
+                 | TOGGLE ID
+                 | TOGGLE ID NUMBER NUMBER
+                 | CLEAR
+                 ;
+
+action_or_alias ::= PLUS_FORWARD
+                  | MINUS_FORWARD
+                  | PLUS_BACK
+                  | MINUS_BACK
+                  | PLUS_LEFT
+                  | MINUS_LEFT
+                  | PLUS_RIGHT
+                  | MINUS_RIGHT
+                  | PLUS_SPEED
+                  | MINUS_SPEED
+                  | PLUS_JUMP
+                  | MINUS_JUMP
+                  | PLUS_DUCK
+                  | MINUS_DUCK
+                  | PLUS_ATTACK
+                  | MINUS_ATTACK
+                  | PLUS_ATTACK2
+                  | MINUS_ATTACK2
+                  | PLUS_RELOAD
+                  | MINUS_RELOAD
+                  | PLUS_USE
+                  | MINUS_USE
+                  | PLUS_SCORE
+                  | MINUS_SCORE
+                  | PLUS_VOICERECORD
+                  | MINUS_VOICERECORD
+                  | SLOT1
+                  | SLOT2
+                  | SLOT3
+                  | SLOT4
+                  | SLOT5
+                  | SLOT6
+                  | SLOT7
+                  | SLOT8
+                  | SLOT9
+                  | SLOT10
+                  | TOGGLECONSOLE
+                  | ID
+                  | STRING
+                  ;
+
+value ::= NUMBER
+        | STRING
+        | ID
+        ;
+
+alias_body ::= alias_statement_list
+             ;
+
+alias_statement_list ::= alias_statement_list alias_statement
+                       | alias_statement
+                       |
+                       ;
+
+alias_statement ::= bind_statement
+                  | config_statement
+                  | echo_statement
+                  | CLEAR SEMICOLON
+                  ;

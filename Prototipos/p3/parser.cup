@@ -1,0 +1,38 @@
+import java_cup.runtime.*;
+
+parser code {:
+    /*import java.util.*;
+    import your.package.Semantic;  // ajuste o pacote se necessário
+
+    private Semantic semantic = new Semantic();
+
+    public Semantic getSemantic() {
+        return semantic;
+    }*/
+:}
+
+// ===== Palavras-chave =====
+terminal CLEAR, ECHO, PROFILE, VAR, TECLA;
+// ===== Comandos Traduzidos =====
+terminal JUMP_PLUS, JUMP_MINUS;
+terminal DUCK_PLUS, DUCK_MINUS;
+terminal ATTACK_PLUS, ATTACK_MINUS;
+terminal CROSSHAIR, COLOR, SENS;
+terminal SLOT1, SLOT2;
+// ===== Delimitadores =====
+terminal QUOTE, EQUALS, SEMICOLON, LBRACE, RBRACE;
+// ===== Valores =====
+terminal String KEY, ID;
+terminal Double NUMBER;
+
+non terminal start, profile, var, comand, direct;
+
+start ::= profile | var | direct;
+
+profile ::= KW_PROFILE ID LBRACE comand RBRACE;
+
+comand ::= direct SEMICOLON
+
+var ::= KW_VAR 
+
+direct::= KW_CLEAR | KW_ECHO;
